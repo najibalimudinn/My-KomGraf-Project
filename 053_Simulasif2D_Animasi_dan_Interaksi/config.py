@@ -13,7 +13,8 @@ baltrans = {
     'rotadir': 1,
     'scadir': 1,
     'maxdegree': 0,
-    'floating': False
+    'floating': False,
+    'blowing': False
 }
 balloon_positions = [
     (xo + 200, yo + 200),

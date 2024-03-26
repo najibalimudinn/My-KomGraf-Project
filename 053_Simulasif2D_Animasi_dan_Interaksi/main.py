@@ -7,17 +7,18 @@ import karya2D.balloon
 import karya2D.cloud
 import karya2D.heliumtube
 import config
-import math
-import numpy as np
 
 def setup():
     py5.size(config.width, config.height)
+    global bg
+    bg = py5.load_image('background.png')
 
 def draw():
-    py5.background(0)
-    # py5.fill(0)
-    text = 'Press LEFT/RIGHT to rotate the balloon\nPress F to make the balloon floating'
-    py5.text(text, 10, 10, 10)
+    py5.background(bg)
+    text = 'Press LEFT/RIGHT to control wind directions\nPress F to make the balloon floating\nPress LEFT/RIGHT again to make wind stronger'
+    text2 = 'Wind direction: ' + ('LEFT' if config.baltrans['maxdegree'] < 0 else ('RIGHT' if config.baltrans['maxdegree'] > 0 else 'NONE')) + '\nWind strength: ' + ('2X' if abs(config.baltrans['maxdegree']) == 50 else '1X') + '\nFloating: ' + ('ON' if config.baltrans['floating'] else 'OFF')
+    py5.text(text, 10, 20, 10)
+    py5.text(text2, 10, 200, 10)
 
     balloons = [karya2D.balloon.Balloon(x, y, 50) for x, y in config.balloon_positions]
     clouds = [karya2D.cloud.Cloud(x, y, r) for x, y, r in config.cloud_positions]
@@ -52,17 +53,18 @@ def draw():
         floating_balloons()
 
 def update_baltrans():
-    config.baltrans['scale'] += .02*config.baltrans['scadir']
-    if config.baltrans['scale'] >= 1 or config.baltrans['scale'] <= .5:
-        config.baltrans['scadir'] *= -1
+    if config.baltrans['blowing']:
+        config.baltrans['scale'] += .02*config.baltrans['scadir']
+        if config.baltrans['scale'] >= 1 or config.baltrans['scale'] <= .5:
+            config.baltrans['scadir'] *= -1
 
     if config.baltrans['rotadir'] == 1 and config.baltrans['degree'] < config.baltrans['maxdegree']:
-        config.baltrans['degree'] += 4 if config.baltrans['maxdegree'] == 30 else 2
+        config.baltrans['degree'] += 4 if config.baltrans['maxdegree'] == 50 else 2
     elif config.baltrans['rotadir'] == -1 and config.baltrans['degree'] > config.baltrans['maxdegree']:
-        config.baltrans['degree'] -= 4 if config.baltrans['maxdegree'] == -30 else 2
+        config.baltrans['degree'] -= 4 if config.baltrans['maxdegree'] == -50 else 2
 
 def update_clotrans():
-    config.clotrans['speed'] = 3 if config.baltrans['maxdegree'] == 30 or config.baltrans['maxdegree'] == -30 else 2
+    config.clotrans['speed'] = 3 if abs(config.baltrans['maxdegree']) == 50 else 2
     for idx in range(len(config.clotrans['clotdir'])):
         if config.baltrans['degree'] != 0:
             config.clotrans['clotrlt'][idx] += config.clotrans['speed']*config.clotrans['clotdir'][idx]
@@ -77,13 +79,15 @@ def floating_balloons():
 def key_pressed():
     if py5.key_code == py5.LEFT:
         config.baltrans['rotadir'] = -1
-        if config.baltrans['maxdegree'] > -30:
-            config.baltrans['maxdegree'] -= 15
-    elif py5.key_code == py5.RIGHT:
+        if config.baltrans['maxdegree'] > -50:
+            config.baltrans['maxdegree'] -= 25
+    if py5.key_code == py5.RIGHT:
         config.baltrans['rotadir'] = 1
-        if config.baltrans['maxdegree'] < 30:
-            config.baltrans['maxdegree'] += 15
-    elif py5.key == 'F' or py5.key == 'f':
+        if config.baltrans['maxdegree'] < 50:
+            config.baltrans['maxdegree'] += 25
+    if py5.key == 'F' or py5.key == 'f':
         config.baltrans['floating'] = not config.baltrans['floating']
+    if py5.key == 'B' or py5.key == 'b':
+        config.baltrans['blowing'] = not config.baltrans['blowing']
 
 py5.run_sketch()
